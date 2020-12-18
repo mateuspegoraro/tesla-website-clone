@@ -1,19 +1,17 @@
 import React, { useCallback, useRef, useState } from 'react';
 
-import { Container } from './styles';
+import { Container, OverlaysRoot } from './styles';
 import ModelsContext, { CarModel } from '../ModelsContext';
+import ModelOverlay from '../ModelOverlay';
 
 const ModelsWrapper: React.FC = ({ children }) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   const [registeredModels, setRegisteredModels] = useState<CarModel[]>([]);
 
-  const registerModel = useCallback(
-    (model: CarModel) => {
-      setRegisteredModels([...registeredModels, model]);
-    },
-    [registeredModels],
-  );
+  const registerModel = useCallback((model: CarModel) => {
+    setRegisteredModels(state => [...state, { ...model }]);
+  }, []);
 
   const unregisterModel = useCallback((modelName: string) => {
     setRegisteredModels(state =>
@@ -40,7 +38,16 @@ const ModelsWrapper: React.FC = ({ children }) => {
         getModelByName,
       }}
     >
-      <Container ref={wrapperRef}>{children}</Container>
+      <Container ref={wrapperRef}>
+        <OverlaysRoot>
+          {registeredModels.map(item => (
+            <ModelOverlay key={item.modelName} model={item}>
+              {item.overlayNode}
+            </ModelOverlay>
+          ))}
+        </OverlaysRoot>
+        {children}
+      </Container>
     </ModelsContext.Provider>
   );
 };
